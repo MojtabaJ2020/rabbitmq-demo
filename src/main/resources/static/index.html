@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-Time Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.0/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+<h1>Real-Time Notifications</h1>
+<input type="text" id="messageInput" placeholder="Enter a message">
+<button onclick="sendMessage()">Send</button>
+<ul id="notifications"></ul>
+
+<script>
+    // Connect to WebSocket
+    const socket = new SockJS('/ws');
+    const stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, () => {
+        // Subscribe to the notifications topic
+        stompClient.subscribe('/topic/notifications', (message) => {
+            const li = document.createElement('li');
+            li.textContent = message.body;
+            document.getElementById('notifications').appendChild(li);
+        });
+    });
+
+    // Send a message to the server
+    function sendMessage() {
+        const message = document.getElementById('messageInput').value;
+        stompClient.send('/app/notify', {}, message);
+        document.getElementById('messageInput').value = '';
+    }
+</script>
+</body>
+</html>
